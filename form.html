@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.3.5/axios.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css"
+        integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+</head>
+
+<body>
+    <div>
+        <form id="my-form" onsubmit="addUser(event)">
+            <div>
+                <label for="name">name</label>
+                <input type="text" id="name" name="name">
+            </div>
+            <div>
+                <label for="phonenumber">PhoneNumber</label>
+                <input type="text" name="phonenumber" id="phonenumber">
+            </div>
+            <div>
+                <label for="email">Email</label>
+                <input type="text" name="email" id="email">
+            </div>
+            <div>
+                <button type="submit">AddUser</button>
+            </div>
+            <ul id="users">
+
+            </ul>
+        </form>
+    </div>
+    <script>
+
+        let form = document.getElementById("my-form");
+        let itemlist = document.getElementById("user")
+
+        window.addEventListener("DOMContentLoaded",async () => {
+            try {
+            const res = await axios.get(`http://localhost:3000/user/get-users`)
+                    console.log(res)
+                    res.data.allusers.forEach((element) => {
+                        showOutput(element);
+                })
+            }
+            catch(err)  {
+                console.log(err)
+            }
+        })
+
+       async function addUser(e) {
+            try {
+                e.preventDefault();
+            let name = document.getElementById("name").value;
+            let phonenumber= document.getElementById("phonenumber").value
+            let email = document.getElementById("email").value
+
+            let obj = {
+                name,
+                phonenumber,
+                email
+            }
+
+            const res = await axios.post(`http://localhost:3000/user/add-user`, obj)
+                    console.log(res.data.newuser)
+                    showOutput(res.data.newuser)
+            }
+            catch(err) {
+                console.log(err);
+            }
+
+        }
+
+        function showOutput(data) {
+            document.getElementById("name").value = '';
+            document.getElementById("phonenumber").value = '';
+            document.getElementById("email").value = '';
+            console.log(data)
+
+            let itemlist = document.getElementById("users")
+            let childnode = `<li class='list-group-items' id="${data.id}">${data.name}-${data.phonenumber}-
+                ${data.email}<button>edit</button><button onclick="deleteuser('${data.id}')">delete</button></li>`
+            itemlist.innerHTML = itemlist.innerHTML + childnode;
+        }
+
+        function deleteuser(userid) {
+            axios.delete(`http://localhost:3000/user/delete-user/${userid}`)
+                .then(res => {
+                    console.log(res);
+                    removefromscreen(userid);
+                })
+
+        }
+        function removefromscreen(userid) {
+            let user = document.getElementById(`${userid}`)
+            let parent = document.getElementById("users");
+            parent.removeChild(user);
+        }
+
+        
+
+    </script>
+</body>
+
+</html>
